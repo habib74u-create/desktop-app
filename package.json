@@ -9,7 +9,7 @@
     "build": "npm run build:native && npx webpack",
     "server": "tsx src/server/index.ts",
     "build:tsc": "tsc --noEmit",
-    "build:native": "node-gyp rebuild",
+    "build:native": "node -e \"if(process.platform==='darwin'){require('child_process').execSync('node-gyp rebuild',{stdio:'inherit'})}else{console.log('Skipping native build (Mac-only modules) on '+process.platform)}\"",
     "build:mac": "npm run build && electron-builder --mac --dir",
     "build:dmg": "npm run build && electron-builder --mac --x64 --arm64",
     "build:dmg:custom": "npm run build:mac && chmod +x ./scripts/create-dmg.sh && ./scripts/create-dmg.sh both",
@@ -30,7 +30,7 @@
     "test:performance": "jest --testPathPatterns=performance",
     "test:robustness": "node scripts/test-robustness.js",
     "test:launch": "node scripts/launch-readiness.js",
-    "install": "node-gyp rebuild",
+    "install": "node -e \"if(process.platform==='darwin'){require('child_process').execSync('node-gyp rebuild',{stdio:'inherit'})}else{console.log('Skipping native build (Mac-only modules) on '+process.platform)}\"",
     "build:win": "npm run build && electron-builder --win --x64"
   },
   "keywords": [

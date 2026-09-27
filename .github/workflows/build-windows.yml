@@ -14,7 +14,17 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install --force
+        # The checked-in package-lock.json was generated on a Mac, and its
+        # entry for the Mac-only "appdmg" package (an electron-builder
+        # transitive dependency) is missing its "optional" flag — so on
+        # Windows, npm treats it as required and tries to native-compile
+        # its own dependencies, which fails without Visual Studio. A fresh
+        # dependency resolution (ignoring that lockfile) reads the
+        # correctly-published "optionalDependencies" metadata instead and
+        # skips it properly.
+        run: |
+          if (Test-Path package-lock.json) { Remove-Item package-lock.json }
+          npm install
 
       - name: Build Windows installer
         run: npm run build:win

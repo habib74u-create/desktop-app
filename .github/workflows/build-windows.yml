@@ -13,15 +13,18 @@ jobs:
         with:
           node-version: 20
 
+      - name: Patch package.json for Windows CI
+        # appdmg (and its own dependency fs-xattr) are Mac-only DMG-building
+        # tools pulled in transitively by electron-builder. On Windows they
+        # either hard-fail npm's platform check or need Visual Studio to
+        # native-compile — and we never actually build a Mac .dmg here, so
+        # we swap them for a harmless zero-dependency stub package just for
+        # this CI run. This only edits the checked-out copy on the runner,
+        # never your actual repo/Mac build.
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));p.overrides=Object.assign({},p.overrides,{appdmg:'npm:lodash.noop@^3.0.1','fs-xattr':'npm:lodash.noop@^3.0.1'});fs.writeFileSync('package.json',JSON.stringify(p,null,2));"
+
       - name: Install dependencies
-        # The checked-in package-lock.json was generated on a Mac, and its
-        # entry for the Mac-only "appdmg" package (an electron-builder
-        # transitive dependency) is missing its "optional" flag — so on
-        # Windows, npm treats it as required and tries to native-compile
-        # its own dependencies, which fails without Visual Studio. A fresh
-        # dependency resolution (ignoring that lockfile) reads the
-        # correctly-published "optionalDependencies" metadata instead and
-        # skips it properly.
         run: |
           if (Test-Path package-lock.json) { Remove-Item package-lock.json }
           npm install

@@ -25,9 +25,12 @@ jobs:
           node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));p.overrides=Object.assign({},p.overrides,{appdmg:'npm:lodash.noop@^3.0.1','fs-xattr':'npm:lodash.noop@^3.0.1'});fs.writeFileSync('package.json',JSON.stringify(p,null,2));"
 
       - name: Install dependencies
-        run: |
-          if (Test-Path package-lock.json) { Remove-Item package-lock.json }
-          npm install
+        # Keep the checked-in package-lock.json this time (deleting it
+        # earlier caused npm to freshly re-resolve dependency versions,
+        # which surfaced an unrelated webpack "browser field" resolution
+        # error from a newer transitive version). The override above
+        # already handles the only packages that actually need skipping.
+        run: npm install
 
       - name: Build Windows installer
         run: npm run build:win
